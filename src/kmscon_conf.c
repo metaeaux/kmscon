@@ -133,15 +133,20 @@ static void print_help()
 		"\t    --grab-session-close <grab> [<Ctrl><Logo>BackSpace]\n"
 		"\t                                  Close current session\n"
 		"\t    --grab-terminal-new <grab>  [<Ctrl><Logo>Return]\n"
-		"\t                                  Create a new terminal session\n"
+		"\t                                  Create new terminal session\n"
+		"\t    --grab-rotate-cw <grab>     [<Logo>Plus]\n"
+		"\t                                  Rotate output clock-wise\n"
+		"\t    --grab-rotate-ccw <grab>    [<Logo>Minus]\n"
+		"\t                                  Rotate output counter-clock-wise\n"
 		"\n"
 		"Video Options:\n"
-		"\t    --drm                   [on]    Use DRM if available\n"
-		"\t    --hwaccel               [off]   Use 3D hardware acceleration if\n"
-		"\t                                    available\n"
-		"\t    --gpus={all,aux,primary}[all]   GPU selection mode\n"
-		"\t    --render-engine <eng>   [-]     Console renderer\n"
-		"\t    --render-timing         [off]   Print renderer timing information\n"
+		"\t    --drm                   [on]     Use DRM if available\n"
+		"\t    --hwaccel               [off]    Use 3D hardware-acceleration if\n"
+		"\t                                     available\n"
+		"\t    --gpus={all,aux,primary}[all]    GPU selection mode\n"
+		"\t    --render-engine <eng>   [-]      Console renderer\n"
+		"\t    --render-timing         [off]    Print renderer timing information\n"
+		"\t    --rotate <orientation>  [normal] normal, right, inverted, left\n"
 		"\t    --use-original-mode     [on]    Use original KMS video mode\n"
 		"\n"
 		"Font Options:\n"
@@ -640,6 +645,12 @@ static struct conf_grab def_grab_session_close =
 static struct conf_grab def_grab_terminal_new =
 		CONF_SINGLE_GRAB(SHL_CONTROL_MASK | SHL_LOGO_MASK, XKB_KEY_Return);
 
+static struct conf_grab def_grab_rotate_cw =
+		CONF_SINGLE_GRAB(SHL_LOGO_MASK, XKB_KEY_plus);
+
+static struct conf_grab def_grab_rotate_ccw =
+		CONF_SINGLE_GRAB(SHL_LOGO_MASK, XKB_KEY_minus);
+
 static palette_t def_palette = {
 	[TSM_COLOR_BLACK]         = {   0,   0,   0 }, /* black */
 	[TSM_COLOR_RED]           = { 205,   0,   0 }, /* red */
@@ -723,6 +734,8 @@ int kmscon_conf_new(struct conf_ctx **out)
 		CONF_OPTION_GRAB(0, "grab-session-dummy", &conf->grab_session_dummy, &def_grab_session_dummy),
 		CONF_OPTION_GRAB(0, "grab-session-close", &conf->grab_session_close, &def_grab_session_close),
 		CONF_OPTION_GRAB(0, "grab-terminal-new", &conf->grab_terminal_new, &def_grab_terminal_new),
+		CONF_OPTION_GRAB(0, "grab-rotate-cw", &conf->grab_rotate_cw, &def_grab_rotate_cw),
+		CONF_OPTION_GRAB(0, "grab-rotate-ccw", &conf->grab_rotate_ccw, &def_grab_rotate_ccw),
 
 		/* Video Options */
 		CONF_OPTION_BOOL_FULL(0, "drm", aftercheck_drm, NULL, NULL, &conf->drm, true),
@@ -730,6 +743,7 @@ int kmscon_conf_new(struct conf_ctx **out)
 		CONF_OPTION(0, 0, "gpus", &conf_gpus, NULL, NULL, NULL, &conf->gpus, KMSCON_GPU_ALL),
 		CONF_OPTION_STRING(0, "render-engine", &conf->render_engine, NULL),
 		CONF_OPTION_BOOL(0, "use-original-mode", &conf->use_original_mode, true),
+		CONF_OPTION_STRING(0, "rotate", &conf->rotate, "normal"),
 
 		/* Font Options */
 		CONF_OPTION_STRING(0, "font-engine", &conf->font_engine, "pango"),
